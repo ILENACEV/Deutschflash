@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Rich Forest Green Primary */
+    --background: 132 28% 94%;
+    --foreground: 132 10% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 132 10% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 132 10% 10%;
+    --primary: 139 61% 35%;
+    --primary-foreground: 132 28% 98%;
+    --secondary: 132 20% 88%;
+    --secondary-foreground: 139 61% 25%;
+    --muted: 132 10% 90%;
+    --muted-foreground: 132 10% 40%;
+    --accent: 102 73% 54%;
+    --accent-foreground: 139 61% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 132 15% 85%;
+    --input: 132 15% 85%;
+    --ring: 139 61% 35%;
+    --radius: 1rem;
+    --chart-1: 139 61% 35%;
+    --chart-2: 102 73% 54%;
+    --chart-3: 132 10% 40%;
+    --chart-4: 132 20% 88%;
+    --chart-5: 139 61% 25%;
+  }
+
+  .dark {
+    --background: 220 15% 8%;
+    --foreground: 220 20% 92%;
+    --card: 220 15% 10%;
+    --card-foreground: 220 20% 92%;
+    --popover: 220 15% 10%;
+    --popover-foreground: 220 20% 92%;
+    --primary: 139 65% 55%;
+    --primary-foreground: 220 15% 8%;
+    --secondary: 220 15% 15%;
+    --secondary-foreground: 220 20% 92%;
+    --muted: 220 15% 15%;
+    --muted-foreground: 220 10% 60%;
+    --accent: 102 75% 60%;
+    --accent-foreground: 220 15% 8%;
+    --destructive: 0 70% 40%;
+    --destructive-foreground: 0 0% 95%;
+    --border: 220 15% 18%;
+    --input: 220 15% 18%;
+    --ring: 139 65% 55%;
+    --chart-1: 139 65% 55%;
+    --chart-2: 102 75% 60%;
+    --chart-3: 220 10% 60%;
+    --chart-4: 220 15% 15%;
+    --chart-5: 139 50% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180px);
+}
