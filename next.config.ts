@@ -1,18 +1,18 @@
 import type { NextConfig } from 'next';
+
+const isCloudflare = true; // Disable PWA for Cloudflare Pages compatibility
+
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const withPWA = require('next-pwa')({
+const withPWA = !isCloudflare ? require('next-pwa')({
   dest: 'public',
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === 'development',
-  // Офлајн страница кога нема интернет - користи navigateFallback
   navigateFallback: '/offline.html',
-  // Не исклучувај ги иконите од јавните ресурси
   publicExcludes: [
     '!manifest.json',
   ],
   runtimeCaching: [
-    // CacheFirst за статички ресурси - офлајн приоритет
     {
       urlPattern: /\.(?:js|css|woff|woff2|ttf|eot|svg|png|jpg|jpeg|gif|ico|webp|avif)$/,
       handler: 'CacheFirst',
@@ -20,14 +20,13 @@ const withPWA = require('next-pwa')({
         cacheName: 'deutschflash-static',
         expiration: {
           maxEntries: 500,
-          maxAgeSeconds: 365 * 24 * 60 * 60, // 1 година
+          maxAgeSeconds: 365 * 24 * 60 * 60,
         },
         cacheableResponse: {
           statuses: [0, 200],
         },
       },
     },
-    // StaleWhileRevalidate за HTML страници
     {
       urlPattern: /\.html$/,
       handler: 'StaleWhileRevalidate',
@@ -35,11 +34,10 @@ const withPWA = require('next-pwa')({
         cacheName: 'deutschflash-pages',
         expiration: {
           maxEntries: 100,
-          maxAgeSeconds: 7 * 24 * 60 * 60, // 7 дена
+          maxAgeSeconds: 7 * 24 * 60 * 60,
         },
       },
     },
-    // NetworkFirst за API барања (fallback to cache)
     {
       urlPattern: /^https?.*/,
       handler: 'NetworkFirst',
@@ -47,13 +45,13 @@ const withPWA = require('next-pwa')({
         cacheName: 'deutschflash-cache',
         expiration: {
           maxEntries: 200,
-          maxAgeSeconds: 30 * 24 * 60 * 60, // 30 дена
+          maxAgeSeconds: 30 * 24 * 60 * 60,
         },
         networkTimeoutSeconds: 10,
       },
     },
   ],
-});
+}) : (config: NextConfig) => config;
 
 const nextConfig: NextConfig = {
   typescript: {
