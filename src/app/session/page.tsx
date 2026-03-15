@@ -8,6 +8,7 @@ import { sortWordsForSession, calculateSpacedRepetition } from '@/lib/sr-logic';
 import { VocabularyCard } from '@/components/VocaSwipe/VocabularyCard';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, CheckCircle2, Trophy, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
@@ -134,7 +135,24 @@ export default function SessionPage() {
 
   const safeCurrentIndex = Math.max(0, Math.min(currentIndex, sessionWords.length - 1));
 
-  if (!mounted) return null;
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-background p-6 max-w-md mx-auto flex flex-col">
+        <header className="flex items-center justify-between mb-12">
+          <Skeleton className="h-10 w-10 rounded-full" />
+          <Skeleton className="h-2 w-32" />
+          <Skeleton className="h-6 w-10" />
+        </header>
+        <main className="flex-1 flex flex-col items-center justify-center">
+          <Skeleton className="h-64 w-full rounded-3xl mb-8" />
+          <div className="flex gap-4 w-full">
+            <Skeleton className="h-16 flex-1 rounded-2xl" />
+            <Skeleton className="h-16 flex-1 rounded-2xl" />
+          </div>
+        </main>
+      </div>
+    );
+  }
   if (sessionWords.length === 0) return null;
 
   if (isFinished) {

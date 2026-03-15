@@ -7,6 +7,7 @@ import { VERBS_DATA } from '@/lib/verbs-data';
 import { ADJECTIVES_DATA } from '@/lib/adjectives-data';
 import { IDIOMS_DATA } from '@/lib/idioms-data';
 import { CASES_DATA } from '@/lib/cases-data';
+import { DEFAULT_STATS } from '@/lib/constants';
 import {
   getDB,
   dbGetAllVocab,
@@ -44,14 +45,6 @@ interface StorageContextType {
   idioms: Idiom[];
   cases: CaseQuestion[];
 }
-
-const DEFAULT_STATS: UserStats = {
-  totalLearned: 0,
-  streak: 0,
-  difficultWordsCount: 0,
-  dailyGoal: 10,
-  experience: 0,
-};
 
 const StorageContext = createContext<StorageContextType | null>(null);
 

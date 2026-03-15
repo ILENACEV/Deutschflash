@@ -24,10 +24,11 @@ import {
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { ActivityHeatmap } from '@/components/ActivityHeatmap';
 import {
-  PieChart,
+  PieChart as RechartsPieChart,
   Pie,
   Cell,
   ResponsiveContainer,
@@ -124,7 +125,24 @@ export default function StatsPage() {
     return days;
   }, [sessions]);
 
-  if (!mounted || !stats) return null;
+  if (!mounted || !stats) {
+    return (
+      <div className="min-h-screen bg-background p-6 max-w-md mx-auto font-body pb-20">
+        <header className="flex items-center gap-4 mb-8">
+          <Skeleton className="h-10 w-10 rounded-full" />
+          <div>
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-3 w-24 mt-1" />
+          </div>
+        </header>
+        <section className="space-y-4">
+          <Skeleton className="h-32 w-full rounded-2xl" />
+          <Skeleton className="h-24 w-full rounded-2xl" />
+          <Skeleton className="h-48 w-full rounded-2xl" />
+        </section>
+      </div>
+    );
+  }
 
   const learnedCount = vocab.filter(v => v.status === 'learned').length;
   const totalCount = vocab.length || 1;
@@ -211,7 +229,7 @@ export default function StatsPage() {
         </h2>
         <div className="h-[200px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
+            <RechartsPieChart>
               <Pie
                 data={statusData}
                 cx="50%"
@@ -226,7 +244,7 @@ export default function StatsPage() {
                 ))}
               </Pie>
               <Tooltip />
-            </PieChart>
+            </RechartsPieChart>
           </ResponsiveContainer>
         </div>
         <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-4">

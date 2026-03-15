@@ -14,14 +14,7 @@ import { ADJECTIVES_DATA } from './adjectives-data';
 import { IDIOMS_DATA } from './idioms-data';
 import { CASES_DATA } from './cases-data';
 import { dbGetAllVocab, dbSaveAllVocab, dbGet, dbSet, dbGetArray, dbSaveArray } from './db';
-
-const DEFAULT_STATS: UserStats = {
-  totalLearned: 0,
-  streak: 0,
-  difficultWordsCount: 0,
-  dailyGoal: 10,
-  experience: 0,
-};
+import { DEFAULT_STATS, DEFAULT_SETTINGS } from './constants';
 
 export const storage = {
   // ── Vocabulary ─────────────────────────────────────────────────────────────
@@ -116,7 +109,7 @@ export const storage = {
     if (typeof window === 'undefined') return { sessionSize: 10 };
     const data = await dbGet('stats', 'settings');
     const settings = data as Settings | undefined;
-    return settings ?? { sessionSize: 10 };
+    return settings ?? DEFAULT_SETTINGS;
   },
 
   saveSettings: async (settings: Settings): Promise<void> => {
@@ -208,6 +201,52 @@ export const storage = {
       console.error('Import failed', e);
       return false;
     }
+  },
+
+  exportVocabularyCSV: async (): Promise<void> => {
+    const vocab = await storage.getVocabulary();
+    const headers = ['German', 'Macedonian', 'Category', 'Gender', 'Status', 'Example (DE)', 'Example (MK)'];
+    const rows = vocab.map(w => [
+      w.word,
+      w.translation,
+      w.category,
+      w.gender || '',
+      w.status,
+      w.sentence_de.replace(/,/g, ';'),
+      w.sentence_mk.replace(/,/g, ';')
+    ]);
+    
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(cell => `"${cell}"`).join(','))
+      .join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `deutschflash_vocabulary_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  },
+
+  shareProgress: async (stats: UserStats): Promise<boolean> => {
+    const text = `🎉 го учењето германски со DeutschFlash!\n\n📚 ${stats.totalLearned} зборови научени\n🔥 ${stats.streak} дена streak\n⭐ ${stats.experience} XP\n\nПридружи ми се на: deutschflash.mk`;
+    
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({ text });
+        return true;
+      } catch {
+        return false;
+      }
+    }
+    
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+    
+    return false;
   },
 
   initFromImportData: (data: ImportData[]): VocabularyWord[] => {

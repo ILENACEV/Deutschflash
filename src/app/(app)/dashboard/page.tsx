@@ -45,6 +45,7 @@ import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { DailyReviewReminderCard } from '@/components/DailyReviewReminder';
 import { StreakFreezeCard } from '@/components/StreakFreezeCard';
@@ -123,7 +124,31 @@ export default function Dashboard() {
     }, 500);
   };
 
-  if (!mounted) return null;
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-background p-6 max-w-md mx-auto font-body flex flex-col">
+        <header className="flex justify-between items-center mb-10">
+          <div>
+            <div className="flex items-center gap-2">
+              <Skeleton className="w-6 h-6 rounded-lg" />
+              <Skeleton className="h-8 w-40" />
+            </div>
+            <Skeleton className="h-3 w-28 mt-1" />
+          </div>
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-10 w-16 rounded-full" />
+            <Skeleton className="h-10 w-10 rounded-full" />
+          </div>
+        </header>
+        <Skeleton className="h-12 w-full rounded-2xl mb-8" />
+        <div className="space-y-4">
+          <Skeleton className="h-32 w-full rounded-3xl" />
+          <Skeleton className="h-24 w-full rounded-2xl" />
+          <Skeleton className="h-24 w-full rounded-2xl" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-6 max-w-md mx-auto font-body flex flex-col">

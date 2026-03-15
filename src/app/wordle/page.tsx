@@ -430,7 +430,7 @@ export default function WordlePage() {
       </div>
 
       {/* Keyboard */}
-      <div className="grid grid-cols-10 gap-1 mb-4">
+      <div className="grid grid-cols-10 gap-1 mb-4" role="group" aria-label="Тастатура">
         {['q','w','e','r','t','y','u','i','o','p','a','s','d','f','g','h','j','k','l','z','x','c','v','b','n','m'].map((letter) => {
           const letterState = guesses
             .map(g => getLetterStates(g))
@@ -445,6 +445,7 @@ export default function WordlePage() {
                   setCurrentGuess(prev => prev + letter);
                 }
               }}
+              aria-label={`Буква ${letter.toUpperCase()}`}
               className={`h-12 rounded text-sm font-bold transition-all ${
                 state === 'correct'
                   ? 'bg-green-500 text-white'
@@ -461,6 +462,7 @@ export default function WordlePage() {
         })}
         <button
           onClick={() => setCurrentGuess(prev => prev.slice(0, -1))}
+          aria-label="Избриши ја последната буква"
           className="h-12 rounded bg-muted hover:bg-muted/80 text-xs font-bold col-span-2"
         >
           ⌫
@@ -468,6 +470,7 @@ export default function WordlePage() {
         <button
           onClick={submitGuess}
           disabled={currentGuess.length !== WORD_LENGTH || gameState !== 'playing'}
+          aria-label="Потврди зборот"
           className="h-12 rounded bg-primary hover:bg-primary/90 text-white text-xs font-bold col-span-3 disabled:opacity-50"
         >
           ENTER

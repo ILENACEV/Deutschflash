@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+
+const currentYear = new Date().getFullYear();
 import { Card } from '@/components/ui/card';
 import { 
   Brain, 
@@ -514,7 +516,7 @@ export default function MarketingPage() {
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
-              <span className="font-bold text-foreground">DeutschFlash © 2026</span>
+              <span className="font-bold text-foreground">DeutschFlash © {currentYear}</span>
             </div>
 
             <div className="flex items-center gap-6 text-sm text-muted-foreground">

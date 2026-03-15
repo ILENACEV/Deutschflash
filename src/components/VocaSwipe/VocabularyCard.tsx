@@ -208,13 +208,15 @@ export function VocabularyCard({ word, isTop, onSwipe, onUndo, canUndo, classNam
 
       {/* Swipe Overlay Indicators */}
       {isTop && (
-        <div className="absolute -bottom-28 left-0 right-0 flex justify-center items-center gap-8">
+        <div className="absolute -bottom-28 left-0 right-0 flex justify-center items-center gap-8" role="group" aria-label="Акции за картичката">
            {/* Undo Button */}
            {canUndo && (
              <button 
               onClick={(e) => { e.stopPropagation(); handleUndo(); }}
               className="w-14 h-14 flex items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900 shadow-2xl border-2 border-amber-400 text-amber-600 hover:bg-amber-200 dark:hover:bg-amber-800 transition-all active:scale-90"
               title="Врати назад"
+              aria-label="Врати се на претходниот збор"
+              role="button"
             >
               <Undo2 className="w-6 h-6" />
             </button>
@@ -223,6 +225,9 @@ export function VocabularyCard({ word, isTop, onSwipe, onUndo, canUndo, classNam
             onClick={(e) => { e.stopPropagation(); handleSwipe('left'); }}
             className="w-20 h-20 flex items-center justify-center rounded-full bg-card shadow-2xl border-4 border-destructive text-destructive hover:bg-destructive hover:text-white transition-all active:scale-90"
             title="Не го знам"
+            aria-label="Не го знам зборот"
+            role="button"
+            tabIndex={0}
            >
              <span className="text-3xl font-black">✕</span>
            </button>
@@ -230,6 +235,9 @@ export function VocabularyCard({ word, isTop, onSwipe, onUndo, canUndo, classNam
             onClick={(e) => { e.stopPropagation(); handleSwipe('right'); }}
             className="w-20 h-20 flex items-center justify-center rounded-full bg-card shadow-2xl border-4 border-primary text-primary hover:bg-primary hover:text-white transition-all active:scale-90"
             title="Знаем"
+            aria-label="Знаем го зборот"
+            role="button"
+            tabIndex={0}
            >
              <span className="text-3xl font-black">✓</span>
            </button>

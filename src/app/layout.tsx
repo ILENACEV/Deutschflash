@@ -1,6 +1,7 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import { Providers } from '@/components/Providers';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Inter } from 'next/font/google';
 
 const inter = Inter({
@@ -81,9 +82,11 @@ export default function RootLayout({
         <meta name="theme-color" content="#139443" />
       </head>
       <body className={`${inter.variable} font-body antialiased selection:bg-accent selection:text-accent-foreground`}>
-        <Providers>
-          {children}
-        </Providers>
+        <ErrorBoundary>
+          <Providers>
+            {children}
+          </Providers>
+        </ErrorBoundary>
       </body>
     </html>
   );
