@@ -1,0 +1,6 @@
+# Cloudflare Pages redirects for Next.js
+# Next.js pages
+/:path_index/
+
+# API routes
+/api/:path  /.netlify/functions/:path
