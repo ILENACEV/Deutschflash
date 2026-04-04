@@ -17,12 +17,16 @@ import {
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { useStorageContext } from '@/components/StorageProvider';
+import { speakGerman } from '@/lib/tts';
 
 export default function StoryDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const story = STORIES_DATA.find(s => s.id === id);
+  const { settings } = useStorageContext();
   const [showTranslations, setShowTranslations] = useState<Record<number, boolean>>({});
+  const [playingIdx, setPlayingIdx] = useState<number | null>(null);
 
   if (!story) {
     return (
@@ -39,13 +43,15 @@ export default function StoryDetailPage() {
     setShowTranslations(prev => ({ ...prev, [idx]: !prev[idx] }));
   };
 
-  const handleSpeak = (text: string) => {
-    if (typeof window !== 'undefined' && window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'de-DE';
-      window.speechSynthesis.speak(utterance);
-    }
+  const handleSpeak = (text: string, idx: number) => {
+    setPlayingIdx(idx);
+    speakGerman(text, {
+      rate: settings.voiceSpeed,
+      pitch: settings.voicePitch
+    });
+    
+    // Simulate playing state duration
+    setTimeout(() => setPlayingIdx(null), 1500);
   };
 
   return (
@@ -92,10 +98,13 @@ export default function StoryDetailPage() {
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-8 w-8 rounded-full bg-secondary/30 text-primary"
-                    onClick={() => handleSpeak(p.de)}
+                    className={cn(
+                      "h-8 w-8 rounded-full transition-all",
+                      playingIdx === idx ? "bg-primary text-white animate-pulse shadow-md" : "bg-secondary/30 text-primary"
+                    )}
+                    onClick={() => handleSpeak(p.de, idx)}
                   >
-                    <Volume2 className="w-4 h-4" />
+                    <Volume2 className={cn("w-4 h-4", playingIdx === idx && "fill-current")} />
                   </Button>
                   <Button 
                     variant="ghost" 

@@ -3,6 +3,7 @@ import './globals.css';
 import { Providers } from '@/components/Providers';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Inter } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/react';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -51,8 +52,10 @@ export const metadata: Metadata = {
     title: 'DeutschFlash - Паметно учење германски',
     description: 'Бесплатна платформа за учење германски јазик со SM-2.',
     images: ['/og-image.png'],
+    site: '@deutschflash',
     creator: '@deutschflash',
   },
+  manifest: '/manifest.json',
   robots: {
     index: true,
     follow: true,
@@ -77,15 +80,41 @@ export default function RootLayout({
   return (
     <html lang="mk" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="apple-touch-icon" href="/icon-192.png" />
+        <link rel="icon" href="/icon.png" />
+        <link rel="apple-touch-icon" href="/icon.png" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://va.vercel-analytics.com" />
         <meta name="theme-color" content="#139443" />
       </head>
       <body className={`${inter.variable} font-body antialiased selection:bg-accent selection:text-accent-foreground`}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Course",
+              "name": "Германски за Македонци",
+              "description": "Бесплатен курс за учење германски јазик со SM-2 алгоритам.",
+              "provider": {
+                "@type": "Organization",
+                "name": "DeutschFlash",
+                "sameAs": [
+                  "https://www.deutschflash.mk",
+                  "https://www.facebook.com/profile.php?id=61582273304437",
+                  "https://www.tiktok.com/@naucijaziksonas"
+                ]
+              },
+              "courseMode": "Online",
+              "educationalLevel": ["A1", "A2", "B1"]
+            })
+          }}
+        />
         <ErrorBoundary>
           <Providers>
             {children}
           </Providers>
+          <Analytics />
         </ErrorBoundary>
       </body>
     </html>

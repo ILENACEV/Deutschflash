@@ -39,7 +39,8 @@ import {
   Layers,
   AlertTriangle,
   Grid3X3,
-  Wand2
+  Wand2,
+  Music
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -49,6 +50,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { DailyReviewReminderCard } from '@/components/DailyReviewReminder';
 import { StreakFreezeCard } from '@/components/StreakFreezeCard';
+import { OnboardingTour } from '@/components/OnboardingTour';
 
 export default function Dashboard() {
   const { theme } = useTheme();
@@ -152,6 +154,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background p-6 max-w-md mx-auto font-body flex flex-col">
+      <OnboardingTour />
       <header className="flex justify-between items-center mb-10">
         <div>
           <div className="flex items-center gap-2">
@@ -497,7 +500,29 @@ export default function Dashboard() {
         )}
       </div>
 
-      <footer className="mt-auto pt-6 border-t border-accent/10 space-y-4">
+      <footer className="mt-auto pt-10 border-t border-accent/10 space-y-8">
+        <div className="flex flex-col items-center gap-6">
+           <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-50">ЗАПРАТЕТЕ НЀ</div>
+           <div className="flex gap-4">
+              <a 
+                href="https://www.facebook.com/profile.php?id=61582273304437" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-12 h-12 rounded-2xl bg-card border border-accent/10 shadow-sm flex items-center justify-center text-blue-600 hover:scale-110 transition-all hover:bg-blue-50"
+              >
+                <Facebook className="w-6 h-6 fill-current" />
+              </a>
+              <a 
+                href="https://www.tiktok.com/@naucijaziksonas" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-12 h-12 rounded-2xl bg-card border border-accent/10 shadow-sm flex items-center justify-center text-foreground hover:scale-110 transition-all hover:invert"
+              >
+                <Music className="w-6 h-6" />
+              </a>
+           </div>
+        </div>
+
         <div className="flex justify-center gap-6">
           <Link href="/stats" className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 font-bold text-[10px] uppercase">
              <BarChart2 className="w-4 h-4" /> Статистика

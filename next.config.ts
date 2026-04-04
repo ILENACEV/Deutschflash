@@ -1,9 +1,9 @@
 import type { NextConfig } from 'next';
 
-const isCloudflare = true; // Disable PWA for Cloudflare Pages compatibility
+const isPWAEnabled = process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_ENABLE_PWA !== 'false';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const withPWA = !isCloudflare ? require('next-pwa')({
+const withPWA = isPWAEnabled ? require('next-pwa')({
   dest: 'public',
   register: true,
   skipWaiting: true,
@@ -14,7 +14,7 @@ const withPWA = !isCloudflare ? require('next-pwa')({
   ],
   runtimeCaching: [
     {
-      urlPattern: /\.(?:js|css|woff|woff2|ttf|eot|svg|png|jpg|jpeg|gif|ico|webp|avif)$/,
+      urlPattern: /\.(?:js|css|woff|woff2|ttf|eot|svg|png|jpg|jpeg|gif|ico|webp|avif|mp3|ogg)$/,
       handler: 'CacheFirst',
       options: {
         cacheName: 'deutschflash-static',
@@ -55,7 +55,7 @@ const withPWA = !isCloudflare ? require('next-pwa')({
 
 const nextConfig: NextConfig = {
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   eslint: {
     ignoreDuringBuilds: true,

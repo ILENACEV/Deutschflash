@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { VocabularyWord, WordCategory, Gender } from '@/lib/types';
 import { RotateCcw, Info, Volume2, Undo2 } from 'lucide-react';
+import { useStorageContext } from '../StorageProvider';
+import { speakGerman, stopSpeaking } from '@/lib/tts';
 
 interface VocabularyCardProps {
   word: VocabularyWord;
@@ -16,6 +18,8 @@ interface VocabularyCardProps {
   onUndo?: () => void;
   canUndo?: boolean;
   className?: string;
+  flipped?: boolean;
+  onFlip?: (flipped: boolean) => void;
 }
 
 const CATEGORY_LABELS: Record<WordCategory, string> = {
@@ -38,9 +42,17 @@ const GENDER_COLORS: Record<string, string> = {
   plural: 'bg-yellow-500 text-yellow-950 dark:text-yellow-900'
 };
 
-export function VocabularyCard({ word, isTop, onSwipe, onUndo, canUndo, className }: VocabularyCardProps) {
-  const [isFlipped, setIsFlipped] = useState(false);
+export function VocabularyCard({ word, isTop, onSwipe, onUndo, canUndo, className, flipped, onFlip }: VocabularyCardProps) {
+  const { settings } = useStorageContext();
+  const [isFlipped, setIsFlipped] = useState(flipped || false);
   const [swipeDir, setSwipeDir] = useState<'left' | 'right' | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  useEffect(() => {
+    if (flipped !== undefined) {
+      setIsFlipped(flipped);
+    }
+  }, [flipped]);
 
   // Haptic feedback function
   const triggerHaptic = useCallback((type: 'light' | 'medium' | 'heavy' | 'success' | 'error') => {
@@ -56,26 +68,31 @@ export function VocabularyCard({ word, isTop, onSwipe, onUndo, canUndo, classNam
     }
   }, []);
 
-  const handleSpeak = (text: string, lang: string = 'de-DE') => {
-    if (typeof window !== 'undefined' && window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang;
-      window.speechSynthesis.speak(utterance);
-    }
+  const handleSpeak = (text: string, wordId?: string) => {
+    setIsPlaying(true);
+    speakGerman(text, {
+      rate: settings.voiceSpeed,
+      pitch: settings.voicePitch
+    }, wordId);
+    
+    // We don't have a reliable callback from global speakGerman yet for "end", 
+    // so we'll simulate a 1s pulse or use a timeout based on text length.
+    setTimeout(() => setIsPlaying(false), 1200);
   };
 
   // Автоматско пуштање на звукот кога картичката ќе дојде најгоре
   useEffect(() => {
-    if (isTop) {
-      handleSpeak(word.word);
+    if (isTop && settings.autoPlay) {
+      handleSpeak(word.word, word.id);
     }
-  }, [isTop, word.word]);
+  }, [isTop, word.word, word.id, settings.autoPlay]);
 
   const handleFlip = () => {
     if (!isTop) return;
     triggerHaptic('light');
-    setIsFlipped(!isFlipped);
+    const newState = !isFlipped;
+    setIsFlipped(newState);
+    if (onFlip) onFlip(newState);
   };
 
   const handleSwipe = (dir: 'left' | 'right') => {
@@ -137,13 +154,16 @@ export function VocabularyCard({ word, isTop, onSwipe, onUndo, canUndo, classNam
           <Button 
             variant="ghost" 
             size="icon" 
-            className="absolute top-4 right-4 rounded-full text-primary hover:bg-secondary/50"
+            className={cn(
+              "absolute top-4 right-4 rounded-full text-primary hover:bg-secondary/50 transition-all",
+              isPlaying && "animate-pulse scale-125 bg-primary/10"
+            )}
             onClick={(e) => {
               e.stopPropagation();
-              handleSpeak(word.word);
+              handleSpeak(word.word, word.id);
             }}
           >
-            <Volume2 className="w-6 h-6" />
+            <Volume2 className={cn("w-6 h-6", isPlaying && "fill-primary")} />
           </Button>
           
           <div className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-4">Deutsch</div>
@@ -192,7 +212,7 @@ export function VocabularyCard({ word, isTop, onSwipe, onUndo, canUndo, classNam
                   handleSpeak(word.sentence_de);
                 }}
               >
-                <Volume2 className="w-5 h-5" />
+                <Volume2 className={cn("w-5 h-5", isPlaying && "fill-primary")} />
               </Button>
               <p className="text-lg font-bold text-foreground mb-2 pr-4 italic leading-tight">"{word.sentence_de}"</p>
               <p className="text-sm text-muted-foreground font-medium">{word.sentence_mk}</p>

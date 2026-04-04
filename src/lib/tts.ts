@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { getPreRecordedAudio } from './audio-map';
 
 export type TTSLanguage = 'de-DE' | 'en-US' | 'mk-MK';
 
@@ -17,28 +18,50 @@ interface VoiceInfo {
 let speechSynthesisInstance: SpeechSynthesis | null = null;
 let germanVoice: SpeechSynthesisVoice | null = null;
 let isInitialized = false;
+let isUnlocked = false;
 
 function initSpeechSynthesis(): SpeechSynthesis | null {
-  if (typeof window === 'undefined' || isInitialized) return speechSynthesisInstance;
+  if (typeof window === 'undefined') return null;
   
-  if (typeof window.speechSynthesis !== 'undefined') {
+  if (!speechSynthesisInstance && typeof window.speechSynthesis !== 'undefined') {
     speechSynthesisInstance = window.speechSynthesis;
     
     const loadVoices = () => {
       const voices = speechSynthesisInstance?.getVoices() || [];
-      
-      germanVoice = voices.find(v => v.lang.startsWith('de')) || 
+      if (voices.length === 0) return;
+
+      // Prioritize Google German (High Quality) over local/system voices
+      germanVoice = voices.find(v => v.name.includes('Google') && v.lang.startsWith('de')) || 
+                    voices.find(v => v.lang.startsWith('de')) || 
                     voices.find(v => v.lang.startsWith('en')) ||
                     voices[0] || null;
       
       isInitialized = true;
     };
     
-    if (speechSynthesisInstance.getVoices().length > 0) {
-      loadVoices();
-    } else {
+    // Chrome/Edge load voices asynchronously
+    if (speechSynthesisInstance.onvoiceschanged !== undefined) {
       speechSynthesisInstance.onvoiceschanged = loadVoices;
     }
+    loadVoices();
+
+    // Browser Unlock Hack: Many browsers block auto-play until a user interaction
+    const unlock = () => {
+      if (isUnlocked) return;
+      
+      // Play a tiny silent utterance to "unlock" the engine
+      const silent = new SpeechSynthesisUtterance('');
+      silent.volume = 0;
+      speechSynthesisInstance?.speak(silent);
+      
+      isUnlocked = true;
+      window.removeEventListener('click', unlock);
+      window.removeEventListener('touchstart', unlock);
+      console.log('[TTS] Audio engine unlocked via user interaction');
+    };
+
+    window.addEventListener('click', unlock);
+    window.addEventListener('touchstart', unlock);
   }
   
   return speechSynthesisInstance;
@@ -104,13 +127,35 @@ export function useTTS() {
   };
 }
 
-export function speakGerman(text: string, options?: TTSOptions): void {
-  const synth = initSpeechSynthesis();
-  if (!synth) {
-    console.warn('Speech synthesis not supported');
-    return;
+export function speakGerman(text: string, options?: TTSOptions, wordId?: string): void {
+  // 1. Try pre-recorded audio first
+  if (wordId) {
+    const audioPath = getPreRecordedAudio(wordId);
+    if (audioPath) {
+      const audio = new Audio(audioPath);
+      audio.playbackRate = options?.rate ?? 1.0;
+      audio.volume = options?.volume ?? 1.0;
+      
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(err => {
+          console.warn('[TTS] Pre-recorded audio blocked or missing, falling back:', err);
+          performTTS(text, options);
+        });
+      }
+      return;
+    }
   }
 
+  // 2. Fallback to Browser TTS
+  performTTS(text, options);
+}
+
+function performTTS(text: string, options?: TTSOptions) {
+  const synth = initSpeechSynthesis();
+  if (!synth) return;
+
+  // Stop any current speech
   synth.cancel();
 
   const utterance = new SpeechSynthesisUtterance(text);
@@ -120,12 +165,28 @@ export function speakGerman(text: string, options?: TTSOptions): void {
   utterance.volume = options?.volume ?? 1;
 
   const voices = synth.getVoices();
-  const voice = voices.find(v => v.lang.startsWith('de')) || 
-                voices.find(v => v.lang.startsWith('en')) ||
-                voices[0];
-  if (voice) {
-    utterance.voice = voice;
+  // Chrome fix: re-find the best voice in case it wasn't ready at init
+  const bestVoice = voices.find(v => v.name.includes('Google') && v.lang.startsWith('de')) || 
+                    voices.find(v => v.lang.startsWith('de')) || 
+                    germanVoice;
+                    
+  if (bestVoice) {
+    utterance.voice = bestVoice;
   }
+
+  // Chrome Bug Fix: Long utterances can sometimes hang. 
+  // We force a resume every 10 seconds if it's still "speaking"
+  const resumeInterval = setInterval(() => {
+    if (!synth.speaking) {
+      clearInterval(resumeInterval);
+    } else {
+      synth.pause();
+      synth.resume();
+    }
+  }, 10000);
+
+  utterance.onend = () => clearInterval(resumeInterval);
+  utterance.onerror = () => clearInterval(resumeInterval);
 
   synth.speak(utterance);
 }

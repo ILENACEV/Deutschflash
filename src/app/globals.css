@@ -82,5 +82,5 @@
 }
 
 .rotate-y-180 {
-  transform: rotateY(180px);
+  transform: rotateY(180deg);
 }

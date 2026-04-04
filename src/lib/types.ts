@@ -64,6 +64,7 @@ export interface UserStats {
   sentencesCompleted?: number;
   dailyGoal: number;
   experience: number;
+  isPremium?: boolean;
 }
 
 export interface ImportData {
@@ -143,6 +144,10 @@ export interface Settings {
   sessionSize: number;
   reminder?: ReviewReminder;
   streakFreeze?: StreakFreeze;
+  algorithm?: 'sm2' | 'fsrs';
+  voiceSpeed?: number; // 0.8, 1.0, 1.2
+  voicePitch?: number; // 0.5 to 2.0
+  autoPlay?: boolean;  // Auto-play audio on card flip/story slide
 }
 
 export interface CustomDeck {

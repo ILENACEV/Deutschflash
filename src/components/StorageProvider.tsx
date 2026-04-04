@@ -1,13 +1,18 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
-import type { VocabularyWord, UserStats, LearningSession, Settings } from '@/lib/types';
-import type { VerbData, AdjectiveQuestion, Idiom, CaseQuestion } from '@/lib/types';
-import { VERBS_DATA } from '@/lib/verbs-data';
-import { ADJECTIVES_DATA } from '@/lib/adjectives-data';
-import { IDIOMS_DATA } from '@/lib/idioms-data';
-import { CASES_DATA } from '@/lib/cases-data';
-import { DEFAULT_STATS } from '@/lib/constants';
+import type { 
+  VocabularyWord, 
+  UserStats, 
+  LearningSession, 
+  Settings,
+  VerbData, 
+  AdjectiveQuestion, 
+  Idiom, 
+  CaseQuestion 
+} from '@/lib/types';
+// Static data imports removed for dynamic loading
+import { DEFAULT_STATS, DEFAULT_SETTINGS } from '@/lib/constants';
 import {
   getDB,
   dbGetAllVocab,
@@ -36,8 +41,8 @@ interface StorageContextType {
   saveSession: (session: LearningSession) => Promise<void>;
 
   // Settings
-  settings: { sessionSize: number };
-  saveSettings: (s: { sessionSize: number }) => Promise<void>;
+  settings: Settings;
+  saveSettings: (s: Settings) => Promise<void>;
 
   // Game data (read only from context — rarely changes)
   verbs: VerbData[];
@@ -55,11 +60,11 @@ export function StorageProvider({ children }: { children: ReactNode }) {
   const [vocabulary, setVocabulary] = useState<VocabularyWord[]>([]);
   const [stats, setStats] = useState<UserStats>(DEFAULT_STATS);
   const [sessions, setSessions] = useState<LearningSession[]>([]);
-  const [settings, setSettings] = useState<{ sessionSize: number }>({ sessionSize: 10 });
-  const [verbs, setVerbs] = useState<VerbData[]>(VERBS_DATA);
-  const [adjectives, setAdjectives] = useState<AdjectiveQuestion[]>(ADJECTIVES_DATA);
-  const [idioms, setIdioms] = useState<Idiom[]>(IDIOMS_DATA);
-  const [cases, setCases] = useState<CaseQuestion[]>(CASES_DATA);
+  const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
+  const [verbs, setVerbs] = useState<VerbData[]>([]);
+  const [adjectives, setAdjectives] = useState<AdjectiveQuestion[]>([]);
+  const [idioms, setIdioms] = useState<Idiom[]>([]);
+  const [cases, setCases] = useState<CaseQuestion[]>([]);
 
   // ── Load all data once on mount ────────────────────────────────────────────
   useEffect(() => {
@@ -91,11 +96,36 @@ export function StorageProvider({ children }: { children: ReactNode }) {
         setVocabulary(vocabData ?? []);
         setStats(stats ? { ...DEFAULT_STATS, ...stats } : DEFAULT_STATS);
         setSessions((sessionsData as LearningSession[]) ?? []);
-        setSettings((settingsData as Settings) ?? { sessionSize: 10 });
-        setVerbs(verbsData.length > 0 ? verbsData : VERBS_DATA);
-        setAdjectives(adjData.length > 0 ? adjData : ADJECTIVES_DATA);
-        setIdioms(idiomsData.length > 0 ? idiomsData : IDIOMS_DATA);
-        setCases(casesData.length > 0 ? casesData : CASES_DATA);
+        setSettings((settingsData as Settings) ?? DEFAULT_SETTINGS);
+        // Fallback to static data if IDB is empty
+        if (verbsData.length === 0) {
+          const { VERBS_DATA } = await import('@/lib/verbs-data');
+          setVerbs(VERBS_DATA);
+        } else {
+          setVerbs(verbsData);
+        }
+
+        if (adjData.length === 0) {
+          const { ADJECTIVES_DATA } = await import('@/lib/adjectives-data');
+          setAdjectives(ADJECTIVES_DATA);
+        } else {
+          setAdjectives(adjData);
+        }
+
+        if (idiomsData.length === 0) {
+          const { IDIOMS_DATA } = await import('@/lib/idioms-data');
+          setIdioms(IDIOMS_DATA);
+        } else {
+          setIdioms(idiomsData);
+        }
+
+        if (casesData.length === 0) {
+          const { CASES_DATA } = await import('@/lib/cases-data');
+          setCases(CASES_DATA);
+        } else {
+          setCases(casesData);
+        }
+
       } catch (err) {
         console.error('[StorageProvider] Failed to load from IndexedDB:', err);
       } finally {
@@ -109,6 +139,11 @@ export function StorageProvider({ children }: { children: ReactNode }) {
   const saveVocabulary = useCallback(async (words: VocabularyWord[]) => {
     setVocabulary(words);
     await dbSaveAllVocab(words);
+  }, []);
+
+  const saveSettings = useCallback(async (s: Settings) => {
+    setSettings(s);
+    await dbSet('stats', 'settings', s as unknown as UserStats);
   }, []);
 
   const saveStats = useCallback(async (newStats: UserStats) => {
@@ -134,10 +169,6 @@ export function StorageProvider({ children }: { children: ReactNode }) {
     await addXP(session.correctCount * 10);
   }, [addXP]);
 
-  const saveSettings = useCallback(async (s: { sessionSize: number }) => {
-    setSettings(s);
-    await dbSet('stats', 'settings', s as unknown as UserStats);
-  }, []);
 
   return (
     <StorageContext.Provider value={{

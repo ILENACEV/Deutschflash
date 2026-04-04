@@ -30,6 +30,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   // In a real app, you would fetch blog slugs, stories IDs, etc. from your data files
   // and add them here dynamically.
+  const { STORIES_DATA } = require('@/lib/stories-data');
+  const storyRoutes = (STORIES_DATA || []).map((story: any) => ({
+    url: `${baseUrl}/stories/${story.id}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
+  }));
 
-  return [...routes];
+  return [...routes, ...storyRoutes];
 }
